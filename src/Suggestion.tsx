@@ -112,8 +112,9 @@ export function Suggestion(props: Props) {
                 classNames={animClass}
                 timeout={{
                     enter: 300,
-                    exit: 100,
+                    exit: 0,
                 }}
+                mountOnEnter={true}
                 in={hovered}
                 unmountOnExit={true}
             >
