@@ -161,7 +161,11 @@ export function Demon(props: RouteComponentProps<Props>) {
                             Suggestions
                         </Title>
 
-                        <div className="uk-flex uk-flex-wrap uk-flex-evenly">
+                        <div
+                            style={{
+                                justifyContent: 'center'
+                            }}
+                            className="uk-flex uk-flex-wrap">
                             {
                                 suggestions && suggestions.length > 0 ? suggestions.map((s, i) => {
                                     return (

@@ -141,7 +141,10 @@ export default function Suggestions(props) {
                                     {
                                         s.selected ? <div style={{
                                             margin: '20px 0',
-                                            display: 'flex', alignItems: 'center', textAlign: 'center',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            textAlign: 'center',
+                                            flexDirection: 'column',
                                             padding: '10px 25px',
                                             border: '2px solid #1e87f0',
                                             color: '#1e87f0',

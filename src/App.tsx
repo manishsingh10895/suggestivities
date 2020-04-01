@@ -56,8 +56,7 @@ function App() {
   }, [])
 
   return (
-    <div className="App" style={{ backgroundColor: '#fcfcfc' }}>
-
+    <div className="App uk-container" style={{ backgroundColor: '#fcfcfc' }}>
       <BrowserRouter>
         <nav
           style={{
@@ -65,7 +64,8 @@ function App() {
             width: '100%',
             display: authed ? 'flex' : 'none',
             background: '#fcfcfc',
-            zIndex: 101010101
+            zIndex: 101010101,
+            maxWidth: '1200px'
           }}
           className="uk-navbar-container uk-navbar-transparent" uk-navbar="true">
           <div className="uk-navbar-left">
