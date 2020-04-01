@@ -1,7 +1,19 @@
 import React from 'react'
 import firebase from 'firebase'
+import { useLocation, RouteComponentProps } from 'react-router-dom';
 
-export function Login(props) {
+function useQuery() {
+    return new URLSearchParams(useLocation().search);
+}
+
+export function Login(props: RouteComponentProps<{ from: string }>) {
+    let query = useQuery();
+
+    //@ts-ignore
+    console.log(props.location?.state?.from);
+    //@ts-ignore
+    let redirect = props.location?.state?.from?.pathname;
+
     async function fireLogin() {
         try {
             var provider = new firebase.auth.GoogleAuthProvider();
@@ -11,6 +23,10 @@ export function Login(props) {
             let user = await firebase.auth()
                 .signInWithPopup(provider)
 
+            if (redirect) {
+                props.history.push(redirect);
+                return;
+            }
 
             props.history.push('/');
         } catch (err) {

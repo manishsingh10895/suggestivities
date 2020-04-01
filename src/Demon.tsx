@@ -14,6 +14,37 @@ type Props = {
     id: string
 }
 
+declare var Navigator: {
+    share: () => void
+}
+
+function Share({ demon }) {
+
+    if (!demon) return null;
+
+    let text = 'Suggest me some ' + demon.name;
+
+    //@ts-ignore
+    if (navigator.share) {
+        return (
+            <div onClick={() => {
+                //@ts-ignore
+                navigator.share({
+                    title: 'Suggestivities',
+                    text,
+                    url: window.location.href
+                })
+            }}>
+                <span uk-icon="icon: social"></span>
+            </div>
+        )
+    }
+    else {
+        return <div>
+            <a target="_blank" href={`https://web.whatsapp.com/send?text=${window.location.href}`} data-action="share/whatsapp/share"><span uk-icon="icon: social"></span></a>
+        </div>
+    }
+}
 
 export function Demon(props: RouteComponentProps<Props>) {
 
@@ -57,6 +88,13 @@ export function Demon(props: RouteComponentProps<Props>) {
         let val = snap.val();
 
         setDemon(val);
+
+        console.log(val);
+
+        if (!val) {
+            props.history.push('/');
+            return;
+        }
 
         await fetchSuggestions();
 
@@ -130,6 +168,7 @@ export function Demon(props: RouteComponentProps<Props>) {
         }
     }
 
+
     return (
         <div className="fh uk-flex uk-flex-center uk-flex-middle">
             {
@@ -151,7 +190,13 @@ export function Demon(props: RouteComponentProps<Props>) {
                                         {demon.description}
                                     </h5>
 
-                                    <Author author={demon.author} ></Author>
+                                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                                        <Author author={demon.author} ></Author>
+
+                                        <div className="share" style={{ marginLeft: 12 }}>
+                                            <Share demon={demon}></Share>
+                                        </div>
+                                    </div>
                                 </div>
                         }
 
@@ -204,3 +249,4 @@ export function Demon(props: RouteComponentProps<Props>) {
         </div>
     )
 }
+
