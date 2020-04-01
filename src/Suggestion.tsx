@@ -90,6 +90,7 @@ export function Suggestion(props: Props) {
                 margin: 4,
                 flex: '1 1 0',
                 maxWidth: '350px',
+                minWidth: '250px',
                 position: 'relative',
                 borderRadius: 50,
                 display: 'flex',
