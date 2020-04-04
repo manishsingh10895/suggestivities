@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { db } from './firebase';
 import { useParams, RouteComponentProps } from 'react-router-dom';
 import { Loader } from './components/loader';
@@ -10,6 +10,7 @@ import { checkIfValidUser, ShowNotification } from './utils';
 import { Author } from './Auther';
 import EmptyData from './EmptyData';
 import Comments from './Comments';
+import { useIntersectionObserver } from './hooks/intersection-observer.hook';
 
 type Props = {
     id: string
@@ -85,10 +86,38 @@ export function Demon(props: RouteComponentProps<Props>) {
 
     const [showCommentsComponent, setshowCommentsComponent] = useState(false)
 
+    const [intersecting, setIntersecting] = useState(false)
+
+    const ref = useRef();
+
     const params = useParams<{ id: string }>();
     const id: string = params.id;
 
-    let observer: IntersectionObserver;
+    function handleIntersection(intersecting: boolean) {
+        if (showCommentsComponent) return;
+
+        if (intersecting) {
+            setShowComments(true);
+        } else {
+            setShowComments(false);
+        }
+
+        console.log(showComments);
+    }
+
+    let observer = new IntersectionObserver((changes, observer) => {
+        console.log(changes);
+        if (showCommentsComponent) return;
+        if (changes && changes.length > 0) {
+            let c = changes[0];
+
+            handleIntersection(c.isIntersecting);
+        }
+    }, {
+        rootMargin: '4px',
+        threshold: 0.5
+    })
+
 
     async function handleNewSuggestions(val: firebase.database.DataSnapshot) {
         console.log(val.val());
@@ -109,32 +138,13 @@ export function Demon(props: RouteComponentProps<Props>) {
         console.log(data);
         setSuggestions(data);
 
-        if (!observer) {
-            setTimeout(() => {
-                let observer = new IntersectionObserver((changes, observer) => {
-                    console.log(changes);
-                    if (changes && changes.length > 0) {
-                        let c = changes[0];
 
-                        if (showCommentsComponent) return;
+        setTimeout(() => {
+            observer.observe(document.querySelector('.demon-container .form-container'));
+        }, 2500)
 
-                        if (c.isIntersecting) {
-                            setShowComments(true);
-                        } else {
-                            setShowComments(false);
-                        }
-
-                        console.log(showComments);
-                    }
-                }, {
-                    rootMargin: '4px',
-                    threshold: 0.5
-                })
-
-                observer.observe(document.querySelector('.demon-container .form-container'));
-            }, 2500)
-        }
     }
+
 
     async function handleSuggestionRemoved(val) {
         console.log(val);
@@ -228,6 +238,7 @@ export function Demon(props: RouteComponentProps<Props>) {
         }
     }
 
+    console.log("Show comments", showCommentsComponent);
 
     return (
         <div className="fh demon-container uk-flex uk-flex-center uk-flex-middle">
@@ -297,7 +308,7 @@ export function Demon(props: RouteComponentProps<Props>) {
                         <hr className="uk-divider-icon" />
 
                         <MakeSuggestion id={id}></MakeSuggestion>
-                       Show Comments {showComments.valueOf()}
+
                         <div
                             onClick={endSuggestions}
                             className="shadow"
@@ -341,6 +352,7 @@ export function Demon(props: RouteComponentProps<Props>) {
                     >
                         <div
                             onClick={() => {
+                                console.log(showCommentsComponent);
                                 setshowCommentsComponent(!showCommentsComponent)
                                 console.log(showCommentsComponent);
                             }
