@@ -65,7 +65,6 @@ function App() {
             display: authed ? 'flex' : 'none',
             background: '#fcfcfc',
             zIndex: 101010101,
-            maxWidth: '1200px',
             top: 0,
             left: 0,
           }}
