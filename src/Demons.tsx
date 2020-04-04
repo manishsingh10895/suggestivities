@@ -9,91 +9,51 @@ import { Author } from "./Auther";
 import { ShowNotification, timeDifference } from "./utils";
 import firebase from "firebase";
 import EmptyData from "./EmptyData";
+import DbService from "./services/db.service";
+import DemonComponent from "./DemonComponent";
 
 export default function Suggestions(props) {
-    const [suggesstions, setSuggesstions] = useState<any>([]);
+    const [demons, setdemons] = useState<any>([]);
 
     const [loading, setLoading] = useState(false);
 
-    async function updateSuggestions(data: firebase.database.DataSnapshot) {
+    async function updateDemons(data: firebase.database.DataSnapshot) {
         console.log(data);
         const val = data.val();
         console.log(val);
 
-        updateSuggestionState(data);
+        updateDemonsState(data);
     }
 
-    function updateSuggestionState(snap: firebase.database.DataSnapshot) {
-        let data: any[] = [];
-        let finished: any[] = [];
+    function updateDemonsState(snap: firebase.database.DataSnapshot) {
+        let data = DbService.getDemonsFromSnap(snap);
 
-        snap.forEach((r) => {
-            let val = r.val();
-            if (!val.finished)
-                data.push({ key: r.key, ...val });
-            else {
-                finished.push({ key: r.key, ...val });
-            }
-        });
-
-        data = data.concat(finished);
-
-        console.log(data);
-
-        setSuggesstions(data);
+        setdemons(data);
     }
 
-    async function fetchSuggestions() {
+    async function fetchDemons() {
 
         setLoading(true);
 
-        db.child('demons').on('value', updateSuggestions);
+        db.child('demons').on('value', updateDemons);
 
         let snap = await db.child('demons').once('value');
 
-        updateSuggestionState(snap);
+        updateDemonsState(snap);
 
         setLoading(false);
     }
 
     async function RemoveDemon(demon) {
-        if (!demon.author) {
-            ShowNotification('danger', 'Error in removing');
-
-            return;
-        }
-
-        let user = firebase.auth().currentUser as firebase.User;
-
-        if (user.uid !== demon.author.id) {
-            ShowNotification('danger', 'You can only delete your own activities');
-            return;
-        }
-
-        let ref = await db.child('demons').child(demon.key).ref;
-
-        if (!ref) {
-            ShowNotification('danger', 'Error in removing');
-
-            return;
-        }
-
-        await ref.remove();
+        await DbService.removeDemon(demon);
     }
 
     useEffect(() => {
-        fetchSuggestions();
+        fetchDemons();
         return () => {
 
         }
     }, [])
-
-    const transitionStyles = {
-        entering: { opacity: 1, },
-        entered: { opacity: 1, transform: 'translateX(0)' },
-        exiting: { opacity: 0 },
-        exited: { opacity: 0, transform: 'translateX(100%)' },
-    };
 
     return (
         <FullCenterContainer>
@@ -109,85 +69,9 @@ export default function Suggestions(props) {
 
                 <div style={{ justifyContent: 'center' }} className="uk-flex uk-flex-wrap" uk-grid="true">
                     {
-                        suggesstions && suggesstions.length > 0 ? suggesstions.map((s, i) => {
+                        demons && demons.length > 0 ? demons.map((s, i) => {
                             console.log(s);
-                            return <div key={i}
-                                style={{
-                                    margin: 10,
-                                    position: "relative",
-                                    flex: '1 1 0',
-                                    minWidth: '225px',
-                                    maxWidth: 350,
-                                    cursor: 'pointer'
-                                }}
-
-                            >
-                                <div
-                                    style={{
-                                        backgroundColor: s.finished ? '#CFD8DC' : 'white',
-                                        borderRadius: '24px',
-                                        paddingBottom: '45px',
-                                    }}
-                                    onClick={() => {
-                                        if (s.finished) return;
-
-                                        props.history.push('/demons/' + s.key)
-                                    }} className={`uk-card uk-card-default uk-card-hover uk-card-body ${s.finished ? 'finished' : ''}`}
-
-                                >
-                                    <h3 className="uk-card-title">{s.name}</h3>
-                                    <p>{s.description}</p>
-
-                                    {
-                                        s.selected ? <div style={{
-                                            margin: '20px 0',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            textAlign: 'center',
-                                            flexDirection: 'column',
-                                            padding: '10px 25px',
-                                            border: '2px solid #1e87f0',
-                                            color: '#1e87f0',
-                                            justifyContent: 'center',
-                                            borderRadius: '25px',
-                                        }}>
-                                            Winner <span style={{ fontSize: 20, paddingLeft: 8 }}>{s.selected.name}</span>
-                                        </div> : null
-                                    }
-
-                                    <div style={{
-                                        marginTop: 8
-                                    }}>
-                                        <Author author={s.author}></Author>
-                                    </div>
-
-
-                                    <div onClick={(e) => { e.stopPropagation(); RemoveDemon(s); }} style={{
-                                        padding: 10,
-                                        borderTopRightRadius: 25,
-                                        background: '#e53935',
-                                        position: 'absolute',
-                                        top: 0,
-                                        right: 0,
-                                        cursor: 'pointer'
-                                    }}>
-                                        <span style={{ color: 'white' }} uk-icon="icon: close"></span>
-                                    </div>
-
-                                    <div
-                                        style={{
-                                            position: 'absolute',
-                                            bottom: 6,
-                                            right: 14,
-                                            fontSize: 14,
-                                            color: 'black'
-                                        }}>
-                                        {
-                                            s.finished ? `finished ${timeDifference(s.finishedAt)}` : timeDifference(s.createdAt)
-                                        }
-                                    </div>
-                                </div>
-                            </div>
+                            return <DemonComponent demon={s} history={props.history} ></DemonComponent>
                         })
                             : loading ? null : <EmptyData></EmptyData>
                     }

@@ -109,11 +109,34 @@ h6 {
 
 .slide-in {
   transform: translateY(-100%);
-  transition: transform 1000ms ease;
+  transition: transform 400ms ease;
 }
 
 .slide-in.slide-in-active {
   transform: translateY(0%);
+}
+
+.slide-in-right {
+  opacity: 0;
+  transform: scaleX(0.8);
+  transform-origin: 0% 0%;
+  transition-duration: 400ms;
+  transition-timing-function: cubic-bezier(0.92, -0.56, 0, 1);
+  transition-property: transform, opacity;
+}
+
+.slide-in-bottom {
+  transform: translateY(100%);
+  transition: transform 400ms ease;
+}
+
+.slide-in-bottom.slide-in-bottom-active {
+  transform: translateY(0%);
+}
+
+.slide-in-right.slide-in-right-active {
+  opacity: 1;
+  transform: scaleX(1);
 }
 
 /* .close {

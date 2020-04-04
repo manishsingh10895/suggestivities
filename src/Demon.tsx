@@ -4,11 +4,12 @@ import { useParams, RouteComponentProps } from 'react-router-dom';
 import { Loader } from './components/loader';
 import { Title } from './styleds/title';
 import MakeSuggestion from './MakeSuggestion';
-import { Transition } from 'react-transition-group';
+import { Transition, CSSTransition, TransitionGroup } from 'react-transition-group';
 import { Suggestion } from './Suggestion';
 import { checkIfValidUser, ShowNotification } from './utils';
 import { Author } from './Auther';
 import EmptyData from './EmptyData';
+import Comments from './Comments';
 
 type Props = {
     id: string
@@ -17,6 +18,32 @@ type Props = {
 declare var Navigator: {
     share: () => void
 }
+
+
+const transitionStyles = {
+    entering: {
+        opacity: 0.75,
+        transform: `translateY(0%) scaleY(1.1)`,
+        boxShadow: "0px -6px 20px 0px #989898",
+    },
+    entered: {
+        opacity: 1,
+        transform: `translateY(0%)`,
+        boxShadow: "0px -6px 20px 0px #989898",
+    },
+    exiting: {
+        opacity: 0.5,
+        transform: `translateY(50%)`,
+        boxShadow: null,
+    },
+    exited: {
+        opacity: 0,
+        transform: `translateY(100%)`,
+        boxShadow: null,
+    }
+};
+
+
 
 function Share({ demon }) {
 
@@ -54,8 +81,14 @@ export function Demon(props: RouteComponentProps<Props>) {
 
     const [loading, setLoading] = useState(false);
 
+    const [showComments, setShowComments] = useState(false);
+
+    const [showCommentsComponent, setshowCommentsComponent] = useState(false)
+
     const params = useParams<{ id: string }>();
     const id: string = params.id;
+
+    let observer: IntersectionObserver;
 
     async function handleNewSuggestions(val: firebase.database.DataSnapshot) {
         console.log(val.val());
@@ -75,6 +108,32 @@ export function Demon(props: RouteComponentProps<Props>) {
 
         console.log(data);
         setSuggestions(data);
+
+        if (!observer) {
+            setTimeout(() => {
+                let observer = new IntersectionObserver((changes, observer) => {
+                    console.log(changes);
+                    if (changes && changes.length > 0) {
+                        let c = changes[0];
+
+                        if (showCommentsComponent) return;
+
+                        if (c.isIntersecting) {
+                            setShowComments(true);
+                        } else {
+                            setShowComments(false);
+                        }
+
+                        console.log(showComments);
+                    }
+                }, {
+                    rootMargin: '4px',
+                    threshold: 0.5
+                })
+
+                observer.observe(document.querySelector('.demon-container .form-container'));
+            }, 2500)
+        }
     }
 
     async function handleSuggestionRemoved(val) {
@@ -83,6 +142,7 @@ export function Demon(props: RouteComponentProps<Props>) {
 
     async function fetchDemon() {
         setLoading(true);
+
         let snap = await db.child('demons').child(id).once('value');
 
         let val = snap.val();
@@ -109,7 +169,7 @@ export function Demon(props: RouteComponentProps<Props>) {
     useEffect(() => {
         fetchDemon();
         return () => {
-
+            observer.unobserve(document.querySelector('.demon-container .form-container'));
         }
     }, [])
 
@@ -170,7 +230,7 @@ export function Demon(props: RouteComponentProps<Props>) {
 
 
     return (
-        <div className="fh uk-flex uk-flex-center uk-flex-middle">
+        <div className="fh demon-container uk-flex uk-flex-center uk-flex-middle">
             {
                 loading ?
                     <Loader></Loader> : null
@@ -212,18 +272,32 @@ export function Demon(props: RouteComponentProps<Props>) {
                             }}
                             className="uk-flex uk-flex-wrap">
                             {
-                                suggestions && suggestions.length > 0 ? suggestions.map((s, i) => {
-                                    return (
-                                        <Suggestion demonId={id} key={i} suggestion={s} index={i}></Suggestion>
-                                    )
-                                }) : <EmptyData></EmptyData>
+                                suggestions && suggestions.length > 0 ?
+                                    <TransitionGroup appear={true} style={{ display: 'flex', flexWrap: 'wrap' }}>
+                                        {
+                                            suggestions.map((s, i) => {
+                                                return (
+                                                    <CSSTransition
+                                                        key={i} in={true} timeout={{ enter: i * 1000, exit: i * 1000, }} classNames={{
+                                                            enter: 'slide-in-right',
+                                                            enterActive: 'slide-in-right-active',
+                                                            appear: 'slide-in-right',
+                                                            appearActive: 'slide-in-right-active',
+                                                        }}>
+                                                        <Suggestion demonId={id} key={i} suggestion={s} index={i}></Suggestion>
+                                                    </CSSTransition>
+                                                )
+                                            })
+                                        }
+                                    </TransitionGroup>
+                                    : <EmptyData></EmptyData>
                             }
                         </div>
 
                         <hr className="uk-divider-icon" />
 
                         <MakeSuggestion id={id}></MakeSuggestion>
-
+                       Show Comments {showComments.valueOf()}
                         <div
                             onClick={endSuggestions}
                             className="shadow"
@@ -232,6 +306,7 @@ export function Demon(props: RouteComponentProps<Props>) {
                                 right: '10px',
                                 bottom: 10,
                                 padding: 12,
+                                zIndex: 2,
                                 borderRadius: '50px',
                                 color: 'white',
                                 cursor: 'pointer',
@@ -246,7 +321,45 @@ export function Demon(props: RouteComponentProps<Props>) {
                     : null
             }
 
-        </div>
+            <Transition
+                timeout={{ enter: 200, exit: 200 }}
+                in={showComments}
+            >
+                {
+                    state => <div
+                        className="comments-container"
+                        style={{
+                            position: "fixed", bottom: 0,
+                            background: '#1e87f0',
+                            overflowY: 'auto',
+                            cursor: 'pointer',
+                            zIndex: showCommentsComponent ? '3' : '1',
+                            maxHeight: showCommentsComponent ? 'calc(100vh - 80px)' : '70px', width: '100%',
+                            transition: `all 200ms ease-in`,
+                            ...transitionStyles[state]
+                        }}
+                    >
+                        <div
+                            onClick={() => {
+                                setshowCommentsComponent(!showCommentsComponent)
+                                console.log(showCommentsComponent);
+                            }
+                            }
+                            style={{ color: 'white', padding: '10px 10px', textAlign: 'left' }}>
+                            {showCommentsComponent ? 'Hide' : "Show"} <span uk-icon="icon: comments"></span>
+                        </div>
+                        {
+                            showCommentsComponent ?
+                                <div style={{ background: 'white' }}>
+                                    <Comments demonId={id}></Comments>
+                                </div>
+                                : null
+                        }
+                    </div>
+                }
+            </Transition>
+
+        </div >
     )
 }
 

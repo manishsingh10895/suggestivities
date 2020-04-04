@@ -10,6 +10,36 @@
 // To learn more about the benefits of this model and instructions on how to
 // opt-in, read https://bit.ly/CRA-PWA
 
+// importScripts('https://www.gstatic.com/firebasejs/7.12.0/firebase-app.js');
+//importScripts('https://www.gstatic.com/firebasejs/7.12.0/firebase-messaging.js');
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBcdEYtDY5rO8BQBHoYuhXIs4b6GBo3X2c",
+  authDomain: "powervote.firebaseapp.com",
+  databaseURL: "https://powervote.firebaseio.com",
+  projectId: "powervote",
+  storageBucket: "powervote.appspot.com",
+  messagingSenderId: "472502404600",
+  appId: "1:472502404600:web:f1729b183a76ca2148420d"
+};
+
+// firebase.initializeApp(firebaseConfig);
+
+// const messaging = firebase.messaging();
+
+// messaging.setBackgroundMessageHandler(function (payload) {
+//   console.log('[firebase-messaging-sw.js] Received background message ', payload);
+//   // Customize notification here
+//   const notificationTitle = payload.title;
+//   const notificationOptions = {
+//     body: payload.body,
+//     icon: '/logo.png'
+//   };
+
+//   return self.registration.showNotification(notificationTitle,
+//     notificationOptions);
+// });
+
 const isLocalhost = Boolean(
   window.location.hostname === 'localhost' ||
   // [::1] is the IPv6 localhost address.

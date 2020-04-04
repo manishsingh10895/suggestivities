@@ -19,3 +19,5 @@ export const Initialize = () => {
     Firebase = firebase.initializeApp(firebaseConfig);
     db = firebase.database().ref('suggestions');
 }
+
+

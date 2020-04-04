@@ -78,18 +78,21 @@ export function Suggestion(props: Props) {
 
     return (
         <div
+
             onMouseLeave={() => {
-                console.log('exitted');
+
                 setHovered(false);
             }}
             onMouseEnter={() => {
-                console.log('entered');
+
                 setHovered(true);
-            }} key={i} className="uk-tile uk-padding-small wow-shadow" style={{
+            }} key={i} className="uk-tile uk-padding-small wow-shadow"
+            style={{
                 backgroundColor: colors[i % colors.length] || '#FF3D00',
                 margin: 4,
                 flex: '1 1 0',
                 maxWidth: '350px',
+                transitionDelay: `${(i * 0.03)}s`,
                 minWidth: '250px',
                 position: 'relative',
                 borderRadius: 50,
@@ -144,6 +147,6 @@ export function Suggestion(props: Props) {
                         backgroundColor: colors[i % colors.length] || '#FF3D00',
                     }}></div>
             </CSSTransition>
-        </div>
+        </div >
     )
 }   
